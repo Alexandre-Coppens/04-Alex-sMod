@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -7,39 +8,49 @@ public class Player : MonoBehaviour
     Player_Inputs player_Inputs;
     [Header("Movements")]
     [SerializeField] private Vector2 movements = Vector2.zero;
+    [SerializeField] private Vector2 mouseAxis = Vector2.zero;
     [SerializeField] private bool jump = false;
     [SerializeField] private float playerSpeed = 5;
-    [SerializeField] private float accelerationSpeed = 5;
-    private Vector3 addMovements = Vector3.zero;
+    [SerializeField] private float playerSpeedAcceleration = 5;
+    private Vector3 velocity = Vector3.zero;
+    private Vector3 camRotation = Vector3.zero;
+    private CapsuleCollider collider;
 
     [Header("Player && Movements")]
-    [SerializeField] GameObject cam;
-    [SerializeField, Range(0.01f, 10f)] float xSensitivity = 1f;
-    [SerializeField, Range(0.01f, 10f)] float ySensitivity = 1f;
-    [SerializeField] float speed = 10f;
-    [SerializeField] float sprintMultiplier = 1.5f;
-    [SerializeField] float jumpStrength = 5f;
-    [SerializeField] GameObject gun;
+    [SerializeField] private GameObject camera;
+    [SerializeField, Range(0.01f, 10f)] private float xSensitivity = 1f;
+    [SerializeField, Range(0.01f, 10f)] private float ySensitivity = 1f;
+    [SerializeField] private float speed = 10f;
+    [SerializeField] private float sprintMultiplier = 1.5f;
+    [SerializeField] private float jumpStrength = 5f;
+    [SerializeField] private GameObject gun;
+    [Tooltip ("X = Normal Mass (get on start), Y = Jump Multiplicator, Z = Fall Multiplicator")]
+    [SerializeField] private Vector3 jumpGravityMultiplicator = Vector3.zero;
 
     [Header("Debug")]
     public bool hasJumped = false;
-    public bool isGrounded = true;
-    public bool isRunning = false;
+    public bool isOnGround = true;
+    public bool isSprinting = false;
     [SerializeField] float value1;
     [SerializeField] float value2;
     [SerializeField] float value3;
 
     private Rigidbody rb;
 
-    [HideInInspector] public bool canRun = true;
+    private bool canSprint = true;
     [HideInInspector] float gunTimer;
-    Vector3 _velocity = Vector3.zero;
-    Vector3 _direction = Vector3.zero;
 
     void Start()
     {
         player_Inputs = Player_Inputs.instance;
         rb = GetComponent<Rigidbody>();
+        camera = Camera.main.gameObject;
+
+        jumpGravityMultiplicator.x = rb.mass;
+        collider = GetComponent<CapsuleCollider>();
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
@@ -52,11 +63,42 @@ public class Player : MonoBehaviour
     {
         movements = player_Inputs.movement;
         jump = player_Inputs.jumpPressed;
+        isSprinting = player_Inputs.runPressed;
+        mouseAxis = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+
+        isOnGround = Physics.Raycast(transform.position - collider.center, Vector3.down, collider.height, 0);
     }
 
     private void Move()
     {
-        addMovements = transform.forward * movements.y + transform.right * movements.x * Time.deltaTime * playerSpeed;
-        transform.position += addMovements;
+        velocity = transform.forward * movements.y + transform.right * movements.x;
+        transform.position += velocity * Time.deltaTime * playerSpeed * (isSprinting ? sprintMultiplier : 1);
+
+        camRotation = new Vector3(mouseAxis.y * xSensitivity, -mouseAxis.x * ySensitivity, 0);
+        camera.transform.rotation = Quaternion.Euler(MathInvClamp(camera.transform.eulerAngles.x - camRotation.x, 80, 270), camera.transform.eulerAngles.y, camera.transform.eulerAngles.z);
+        transform.eulerAngles -= new Vector3(0, camRotation.y, 0);
+
+        if (jump && isOnGround)
+        {
+            rb.AddForce(new Vector3 (0, jumpStrength, 0));
+            rb.mass = jumpGravityMultiplicator.x * jumpGravityMultiplicator.y;
+        }
+        if (rb.velocity.y < 1 && rb.mass != jumpGravityMultiplicator.x * jumpGravityMultiplicator.z) rb.mass = jumpGravityMultiplicator.x * jumpGravityMultiplicator.z;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position - collider.center, Vector3.down * collider.height);
+    }
+
+    //Returns value if inferior or equal to min or superior or equal to max. Else returns the closest.
+    private float MathInvClamp(float value, float min, float max)
+    {
+        if (value <= min) return value;
+        if (value >= max) return value;
+        float x = max - min;
+        if ( value - x >= 0) return max;
+        return min;
     }
 }
