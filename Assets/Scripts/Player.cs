@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class GPlayer : MonoBehaviour
 {
     Player_Inputs player_Inputs;
     [Header("Movements")]
@@ -14,12 +14,12 @@ public class Player : MonoBehaviour
     [SerializeField] private float playerSpeedAcceleration = 5;
     private Vector3 velocity = Vector3.zero;
     private Vector3 camRotation = Vector3.zero;
-    private CapsuleCollider collider;
 
     [Header("Player && Movements")]
     [SerializeField] private GameObject camera;
     [SerializeField, Range(0.01f, 10f)] private float xSensitivity = 1f;
     [SerializeField, Range(0.01f, 10f)] private float ySensitivity = 1f;
+    [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float speed = 10f;
     [SerializeField] private float sprintMultiplier = 1.5f;
     [SerializeField] private float jumpStrength = 5f;
@@ -31,9 +31,7 @@ public class Player : MonoBehaviour
     public bool hasJumped = false;
     public bool isOnGround = true;
     public bool isSprinting = false;
-    [SerializeField] float value1;
-    [SerializeField] float value2;
-    [SerializeField] float value3;
+    [SerializeField] CapsuleCollider collider;
 
     private Rigidbody rb;
 
@@ -66,13 +64,26 @@ public class Player : MonoBehaviour
         isSprinting = player_Inputs.runPressed;
         mouseAxis = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
-        isOnGround = Physics.Raycast(transform.position - collider.center, Vector3.down, collider.height, 0);
+        CheckGround();
+    }
+
+    void CheckGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position + collider.center, Vector3.down, out hit, 10f, groundLayer))
+        {
+            if (hit.distance > collider.height * 0.5f + 0.01f) return;
+            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+            transform.position = hit.point + collider.height * 0.5f * Vector3.up;
+            isOnGround = true;
+        }
     }
 
     private void Move()
     {
         velocity = transform.forward * movements.y + transform.right * movements.x;
-        transform.position += velocity * Time.deltaTime * playerSpeed * (isSprinting ? sprintMultiplier : 1);
+        velocity.y = rb.velocity.y;
+        rb.velocity = velocity * playerSpeed * (isSprinting ? sprintMultiplier : 1);
 
         camRotation = new Vector3(mouseAxis.y * xSensitivity, -mouseAxis.x * ySensitivity, 0);
         camera.transform.rotation = Quaternion.Euler(MathInvClamp(camera.transform.eulerAngles.x - camRotation.x, 80, 270), camera.transform.eulerAngles.y, camera.transform.eulerAngles.z);
@@ -80,16 +91,12 @@ public class Player : MonoBehaviour
 
         if (jump && isOnGround)
         {
-            rb.AddForce(new Vector3 (0, jumpStrength, 0));
+            rb.AddForce(0, jumpStrength, 0);
+            transform.position += new Vector3(0, 0.1f, 0);
             rb.mass = jumpGravityMultiplicator.x * jumpGravityMultiplicator.y;
+            isOnGround = false;
         }
         if (rb.velocity.y < 1 && rb.mass != jumpGravityMultiplicator.x * jumpGravityMultiplicator.z) rb.mass = jumpGravityMultiplicator.x * jumpGravityMultiplicator.z;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position - collider.center, Vector3.down * collider.height);
     }
 
     //Returns value if inferior or equal to min or superior or equal to max. Else returns the closest.
