@@ -6,12 +6,13 @@ public class Player_Inputs : MonoBehaviour
     PlayerInput InputAction;
     public static Player_Inputs instance;
 
-    [HideInInspector] public bool jumpPressed = false;
-    [HideInInspector] public bool shootPressed = false;
-    [HideInInspector] public bool aimPressed = false;
-    [HideInInspector] public bool reloadPressed = false;
-    [HideInInspector] public bool runPressed = false;
-    [HideInInspector] public Vector2 movement = Vector2.zero;
+    public bool jumpPressed = false;
+    public bool shootPressed = false;
+    public bool aimPressed = false;
+    public bool reloadPressed = false;
+    public bool runPressed = false;
+    public Vector2 movement = Vector2.zero;
+    public Vector2 camera = Vector2.zero;
 
     private void Awake()
     {
@@ -25,6 +26,11 @@ public class Player_Inputs : MonoBehaviour
         }
     }
 
+    public void Jump(InputAction.CallbackContext context)
+    {
+        jumpPressed = context.ReadValue<float>() > 0 ? true : false;
+    }
+
     public void ForwardBackward(InputAction.CallbackContext context)
     {
         movement.y = context.ReadValue<float>();
@@ -35,9 +41,9 @@ public class Player_Inputs : MonoBehaviour
         movement.x = context.ReadValue<float>();
     }
 
-    public void Jump(InputAction.CallbackContext context)
+    public void CameraRotation(InputAction.CallbackContext context)
     {
-        jumpPressed = context.ReadValue<float>() > 0 ? true : false;
+        camera = context.ReadValue<Vector2>();
     }
 
     public void Shoot(InputAction.CallbackContext context)
