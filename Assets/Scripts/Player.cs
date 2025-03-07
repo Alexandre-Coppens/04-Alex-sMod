@@ -5,7 +5,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public static Player instance;
     Player_Inputs player_Inputs;
+    
     [Header("Movements")]
     [SerializeField] private Vector2 movements = Vector2.zero;
     [SerializeField] private Vector2 cameraAxis = Vector2.zero;
@@ -49,6 +51,11 @@ public class Player : MonoBehaviour
 
     private bool canSprint = true;
     [HideInInspector] float gunTimer;
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
