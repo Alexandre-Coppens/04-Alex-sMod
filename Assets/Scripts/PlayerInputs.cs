@@ -11,6 +11,8 @@ public class Player_Inputs : MonoBehaviour
     public bool aimPressed = false;
     public bool reloadPressed = false;
     public bool runPressed = false;
+    public bool actionChanged = false;
+    public float weaponChange = 0f;
     public Vector2 movement = Vector2.zero;
     public Vector2 camera = Vector2.zero;
 
@@ -64,5 +66,15 @@ public class Player_Inputs : MonoBehaviour
     public void Reload(InputAction.CallbackContext context)
     {
         reloadPressed = context.ReadValue<float>() > 0 ? true : false;
+    }
+
+    public void ChangeWeapon(InputAction.CallbackContext context)
+    {
+        weaponChange = context.ReadValue<float>();
+    }
+
+    public void ChangeAction(InputAction.CallbackContext context)
+    {
+        actionChanged = context.ReadValue<float>() > 0 ? true : false;
     }
 }

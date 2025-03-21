@@ -92,6 +92,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2966699520409230976}
+  - component: {fileID: 4113251115639534415}
+  - component: {fileID: 6202023311869237921}
   m_Layer: 0
   m_Name: Pistol
   m_TagString: Untagged
@@ -120,6 +122,52 @@ Transform:
   - {fileID: 1030327503702821293}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &4113251115639534415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2476986195760907322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bce121e73491c364ab3d94bf1d7fa22d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onTheFloor: 0
+  weaponData: {fileID: 11400000, guid: 55aef8982643d864ca04fb18782cc8b9, type: 2}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 1792
+  muzzleVFX: {fileID: 0}
+  PREFAB_bullet: {fileID: 856505580064676817, guid: 085ec8675367c9442887b70433f1b83a,
+    type: 3}
+  PREFAB_Decal: {fileID: 345638227694061866, guid: 27ccb32346fad3847a27e635acd9d2dc,
+    type: 3}
+  lastFiredTime: 0
+  debug: 0
+  animator: {fileID: 6202023311869237921}
+--- !u!95 &6202023311869237921
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2476986195760907322}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0a24fd8e0091ffe4e9aa60c7c2829fd5, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4886193363063974845
 GameObject:
   m_ObjectHideFlags: 0

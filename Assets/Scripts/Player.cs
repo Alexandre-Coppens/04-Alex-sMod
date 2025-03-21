@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public GameObject[] weaponList;
+
     public static Player instance;
     Player_Inputs player_Inputs;
     
@@ -35,7 +37,7 @@ public class Player : MonoBehaviour
 
     [Header("Weapon")]
     [SerializeField] private GameObject gun;
-    [SerializeField] private GunScript gunScript;
+    [SerializeField] private Script_Weapons weaponScript;
     [SerializeField] private bool isShooting;
 
     [Header("Debug")]
@@ -63,7 +65,7 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         camera = Camera.main.gameObject;
         cameraAnimator = camera.GetComponent<Animator>();
-        gunScript = gun.GetComponent<GunScript>();
+        weaponScript = gun.GetComponent<Script_Weapons>();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -89,6 +91,7 @@ public class Player : MonoBehaviour
         cameraAxis = new Vector2(Input.GetAxis("Mouse X") + player_Inputs.camera.x, Input.GetAxis("Mouse Y") + player_Inputs.camera.y);
         isOnGround = Physics.Raycast(transform.position - Vector3.down * 0.05f, Vector3.down, floorDistance, floorLayer);
         isShooting = player_Inputs.shootPressed;
+
     }
 
     private void Move()
@@ -119,7 +122,7 @@ public class Player : MonoBehaviour
 
     private void Animations()
     {
-        gunScript.GunUpdate(isSprinting, isShooting);
+        weaponScript.GunUpdate(isSprinting, isShooting);
         cameraAnimator.SetBool("isRunning", isSprinting);
         cameraAnimator.SetFloat("Velocity", Mathf.Abs(movements.x) + Mathf.Abs(movements.y));
     }
@@ -144,5 +147,14 @@ public class Player : MonoBehaviour
         float x = max - min;
         if ( value - x >= 0) return max;
         return min;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Finish")
+        {
+            weaponList[1] = other.gameObject;
+            other.transform.position = new Vector3(1000, 1000, 1000);
+        }
     }
 }

@@ -14,5 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Name
   image: {fileID: 2800000, guid: fc13e8de9cb07c640a52daaa21886dbf, type: 3}
-  speed: 5
+  walkingSpeed: 5
+  health: 100
+  visionDist: 10
+  visionDegrees: 0.3
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  meleeRange: 2
+  meleeAttackTime: 0.5
   entityIA: 1

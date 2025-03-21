@@ -9,26 +9,23 @@ public class Script_Entities : MonoBehaviour
     [SerializeField] private EntitiesData entitiesData;
     private Player player;
 
-    //REMEMBER TO MIGRATE THE VARIABLES IN THE DATA_ASSET
+    public float currentHealth;
+    public bool isDead = false;
+    public EntitiesData.EntityIA entityIA;
 
     [Header("Vision")]
-    [SerializeField] private bool seePlayer;//
-    [SerializeField] private float visionDist;
-    [SerializeField, Range(-1, 1)] private float visionDegrees;
-    [SerializeField] private LayerMask playerLayer;
+    [SerializeField] private bool seePlayer;
 
     [Header("Attack")]
-    [SerializeField] private float meleeRange;
-    [SerializeField] private float meleeAttackTime;
-    [SerializeField] private float lastMeleeAttack;//
-    [SerializeField] private bool inMeleeRange;//
-    [SerializeField] private bool isAttacking;//
+    [SerializeField] private float lastMeleeAttack;
+    [SerializeField] private bool inMeleeRange;
+    [SerializeField] private bool isAttacking;
 
     [Header("Movements")]
     [SerializeField] private Vector3 moveToward;
 
     [SerializeField] private Animator animator;
-    [SerializeField] private NavMeshAgent navMeshAgent;//
+    [SerializeField] private NavMeshAgent navMeshAgent;
 
     void Start()
     {
@@ -36,12 +33,15 @@ public class Script_Entities : MonoBehaviour
         animator = GetComponent<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
 
+        navMeshAgent.speed = entitiesData.walkingSpeed;
+        currentHealth = entitiesData.health;
+        entityIA = entitiesData.entityIA;
         moveToward = transform.position;
     }
     
     void Update()
     {
-        switch (entitiesData.entityIA)
+        switch (entityIA)
         {
             case EntitiesData.EntityIA.None:
                 break;
@@ -53,6 +53,7 @@ public class Script_Entities : MonoBehaviour
             case EntitiesData.EntityIA.Friendly:
                 break;
         }
+        AdditionalScript();
     }
 
     private void HostileIA()
@@ -68,51 +69,75 @@ public class Script_Entities : MonoBehaviour
 
     private void SeeAround()
     {
-        if(Physics.Raycast(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f))).normalized, visionDist, playerLayer))
+        if(Physics.Raycast(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f))).normalized, entitiesData.visionDist, entitiesData.playerLayer))
         {
-            if (Vector3.Dot(transform.forward, ((player.transform.position - transform.position)).normalized) > visionDegrees) 
+            if (Vector3.Dot(transform.forward, ((player.transform.position - transform.position)).normalized) > entitiesData.visionDegrees) 
             { 
                 seePlayer = true; 
                 return;
             }
-
         }
         seePlayer = false;
     }
 
     private void MeleeRange()
     {
-        inMeleeRange = Physics.Raycast(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f))).normalized, meleeRange, playerLayer);
-        Debug.DrawRay(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f))).normalized * meleeRange, Color.blue);
+        inMeleeRange = Physics.Raycast(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f))).normalized, entitiesData.meleeRange, entitiesData.playerLayer);
+        Debug.DrawRay(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f))).normalized * entitiesData.meleeRange, Color.blue);
     }
 
     private void Attack()
     {
-        if (inMeleeRange && Time.time >= lastMeleeAttack + meleeAttackTime)
+        if (inMeleeRange && Time.time >= lastMeleeAttack + entitiesData.meleeAttackTime)
         {
             animator.SetTrigger("Attack_Melee");
             lastMeleeAttack = Time.time;
+            IEnumerator Coroutine = WaitForEndAttack(entitiesData.meleeAttackTime);
+            StartCoroutine(Coroutine);
         }
     }
 
     private void Movement()
     {
-        if(Vector3.Distance(transform.position, moveToward) > meleeRange)
+        if(Vector3.Distance(transform.position, moveToward) > entitiesData.meleeRange)
         {
             moveToward = player.transform.position;
-            navMeshAgent.SetDestination(moveToward);
+            navMeshAgent?.SetDestination(moveToward);
         }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if(isDead) return;
+        currentHealth -= damage;
+        if(currentHealth <= 0)
+        {
+            isDead = true;
+            animator.SetTrigger("Die");
+            entityIA = EntitiesData.EntityIA.None;
+        }
+    }
+
+    public virtual void AdditionalScript()
+    {
+        return;
+    }
+
+    private IEnumerator WaitForEndAttack(float time)
+    {
+        yield return new WaitForSeconds(time);
+        moveToward = player.transform.position;
     }
 
     private void OnDrawGizmosSelected()
     {
         if(seePlayer)Gizmos.color = Color.yellow;
         else Gizmos.color = Color.red;
-        if ((player != null)) Gizmos.DrawRay(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f)).normalized) * visionDist);
-        else Gizmos.DrawRay(transform.position, transform.forward * visionDist);
+        if ((player != null)) Gizmos.DrawRay(transform.position, ((player.transform.position - transform.position + new Vector3(0, 0.5f)).normalized) * entitiesData.visionDist);
+        else Gizmos.DrawRay(transform.position, transform.forward * entitiesData.visionDist);
 
         Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(transform.position, meleeRange);
+        Gizmos.DrawWireSphere(transform.position, entitiesData.meleeRange);
 
     }
 }
