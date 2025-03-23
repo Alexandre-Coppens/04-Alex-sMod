@@ -35,7 +35,6 @@ public class Script_Weapons : MonoBehaviour
             lastFiredTime = Time.realtimeSinceStartup;
 
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-            Debug.DrawRay(ray.origin, ray.direction * weaponData.maxDistance, Color.red, 3f);
             RaycastHit hit;
             rayHit = Vector3.zero;
             if (Physics.Raycast(ray, out hit, weaponData.maxDistance))
@@ -49,19 +48,21 @@ public class Script_Weapons : MonoBehaviour
                 rayHit = gameObject.transform.forward + new Vector3(0, weaponData.maxDistance);
             }
 
+            Debug.DrawLine(ray.origin, hit.point, Color.red, 3f);
+
             GameObject bullet = Instantiate(PREFAB_bullet,
                                             transform.position + new Vector3(0, 0.3f),
                                             transform.rotation * new Quaternion(0, 180, 0, 0));
-            Bullet_Behaviour bb = bullet.GetComponent<Bullet_Behaviour>();
-            bb.Bullet_Start(rayHit);
+            //Bullet_Behaviour bb = bullet.GetComponent<Bullet_Behaviour>();
+            //bb.Bullet_Start(rayHit);
         }
     }
 
     public virtual void HitActor(RaycastHit hit)
     {
-        //GameObject decal = Instantiate(PREFAB_Decal,
-        //                                       hit.point,
-        //                                       transform.rotation * new Quaternion(0, 180, 0, 0));
+        GameObject decal = Instantiate(PREFAB_Decal,
+                                               hit.point,
+                                               transform.rotation * new Quaternion(0, 180, 0, 0));
 
         Script_Entities hitActor = hit.collider.gameObject.GetComponent<Script_Entities>();
         if ( hitActor != null)

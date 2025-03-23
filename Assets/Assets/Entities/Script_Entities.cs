@@ -23,6 +23,7 @@ public class Script_Entities : MonoBehaviour
 
     [Header("Movements")]
     [SerializeField] private Vector3 moveToward;
+    [SerializeField] private Rigidbody rb;
 
     [SerializeField] private Animator animator;
     [SerializeField] private NavMeshAgent navMeshAgent;
@@ -30,8 +31,9 @@ public class Script_Entities : MonoBehaviour
     void Start()
     {
         player = Player.instance;
-        animator = GetComponent<Animator>();
+        animator = GetComponentInChildren<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
+        rb = GetComponent<Rigidbody>();
 
         navMeshAgent.speed = entitiesData.walkingSpeed;
         currentHealth = entitiesData.health;
@@ -99,11 +101,12 @@ public class Script_Entities : MonoBehaviour
 
     private void Movement()
     {
-        if(Vector3.Distance(transform.position, moveToward) > entitiesData.meleeRange)
+        if(Vector3.Distance(transform.position, player.transform.position) > entitiesData.meleeRange)
         {
             moveToward = player.transform.position;
             navMeshAgent?.SetDestination(moveToward);
         }
+        animator.SetFloat("Moving", rb.velocity.magnitude);
     }
 
     public void TakeDamage(float damage)
@@ -137,7 +140,7 @@ public class Script_Entities : MonoBehaviour
         else Gizmos.DrawRay(transform.position, transform.forward * entitiesData.visionDist);
 
         Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(transform.position, entitiesData.meleeRange);
+        Gizmos.DrawWireSphere(transform.position + GetComponent<CapsuleCollider>().center, entitiesData.meleeRange);
 
     }
 }

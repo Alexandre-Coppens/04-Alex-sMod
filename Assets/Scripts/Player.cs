@@ -36,17 +36,16 @@ public class Player : MonoBehaviour
     [SerializeField] private float sprintMultiplier = 1.5f;
 
     [Header("Weapon")]
-    [SerializeField] private GameObject gun;
-    [SerializeField] private Script_Weapons weaponScript;
+    [SerializeField] private GameObject currentWeapon;
+    [SerializeField] private List<GameObject> listOfWeapons = new();
+    private Script_Weapons weaponScript;
     [SerializeField] private bool isShooting;
+    [SerializeField] private float isChangingWeapons;
 
     [Header("Debug")]
     public bool hasJumped = false;
     public bool isOnGround = true;
     public bool isSprinting = false;
-    [SerializeField] float value1;
-    [SerializeField] float value2;
-    [SerializeField] float value3;
 
     private Rigidbody rb;
     private Animator cameraAnimator;
@@ -65,7 +64,7 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         camera = Camera.main.gameObject;
         cameraAnimator = camera.GetComponent<Animator>();
-        weaponScript = gun.GetComponent<Script_Weapons>();
+        weaponScript = currentWeapon.GetComponent<Script_Weapons>();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -91,7 +90,7 @@ public class Player : MonoBehaviour
         cameraAxis = new Vector2(Input.GetAxis("Mouse X") + player_Inputs.camera.x, Input.GetAxis("Mouse Y") + player_Inputs.camera.y);
         isOnGround = Physics.Raycast(transform.position - Vector3.down * 0.05f, Vector3.down, floorDistance, floorLayer);
         isShooting = player_Inputs.shootPressed;
-
+        isChangingWeapons = player_Inputs.weaponChange;
     }
 
     private void Move()
